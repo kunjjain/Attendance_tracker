@@ -9,21 +9,21 @@ Automatically reads your attendance cards and shows:
 ## Downloading & Installing from GitHub
 ### Windows
 
-Click the green Code button on this page → Download ZIP
-Right-click the downloaded ZIP → Extract All
-Open Chrome and go to chrome://extensions/
-Enable Developer mode (toggle, top-right)
-Click Load unpacked → select the extracted folder
-Done! Open the ESPro portal and go to Course Overview
+- Click the green Code button on this page → Download ZIP
+- Right-click the downloaded ZIP → Extract All
+- Open Chrome and go to chrome://extensions/
+- Enable Developer mode (toggle, top-right)
+- Click Load unpacked → select the extracted folder
+- Done! Open the ESPro portal and go to Course Overview
 
 ### Mac
 
-Click the green Code button on this page → Download ZIP
-Double-click the downloaded ZIP to extract it (goes to your Downloads folder)
-Open Chrome and go to chrome://extensions/
-Enable Developer mode (toggle, top-right)
-Click Load unpacked → select the extracted folder
-Done! Open the ESPro portal and go to Course Overview
+- Click the green Code button on this page → Download ZIP
+- Double-click the downloaded ZIP to extract it (goes to your Downloads folder)
+- Open Chrome and go to chrome://extensions/
+- Enable Developer mode (toggle, top-right)
+- Click Load unpacked → select the extracted folder
+- Done! Open the ESPro portal and go to Course Overview
 
 ## How it works
 
