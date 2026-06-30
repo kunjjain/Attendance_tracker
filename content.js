@@ -1,5 +1,6 @@
 // Christ University Attendance Tracker
-const TARGET = 85;
+let TARGET = 85;
+let userClosed = false;
 
 function findSubjectCards() {
   const results = [];
@@ -7,15 +8,15 @@ function findSubjectCards() {
   for (const el of allElements) {
     if (el.children.length > 6) continue;
     const text = el.innerText || '';
-    if (/\d+\s+of\s+\d+\s+hours?\s+attended/i.test(text) && text.length < 600) {
+    if (/\d+(?:\.\d+)?\s+of\s+\d+(?:\.\d+)?\s+hours?\s+attended/i.test(text) && text.length < 600) {
       results.push(el);
     }
   }
 
-  // Group by hours string (e.g. "7 of 10 hours attended"), pick shortest with a course code
+  // Group by hours string, pick shortest with a course code
   const grouped = {};
   for (const el of results) {
-    const m = (el.innerText || '').match(/\d+\s+of\s+\d+\s+hours?\s+attended/i);
+    const m = (el.innerText || '').match(/\d+(?:\.\d+)?\s+of\s+\d+(?:\.\d+)?\s+hours?\s+attended/i);
     if (!m) continue;
     const key = m[0];
     if (!grouped[key]) grouped[key] = [];
@@ -39,11 +40,11 @@ function parseCards() {
   for (const card of cards) {
     const text = card.innerText || '';
 
-    const hoursMatch = text.match(/(\d+)\s+of\s+(\d+)\s+hours?\s+attended/i);
+    const hoursMatch = text.match(/(\d+(?:\.\d+)?)\s+of\s+(\d+(?:\.\d+)?)\s+hours?\s+attended/i);
     if (!hoursMatch) continue;
 
-    const attended = parseInt(hoursMatch[1]);
-    const total = parseInt(hoursMatch[2]);
+    const attended = parseFloat(hoursMatch[1]);
+    const total = parseFloat(hoursMatch[2]);
 
     const pctMatch = text.match(/(\d+(?:\.\d+)?)\s*%/);
     const pct = pctMatch ? parseFloat(pctMatch[1]) : parseFloat(((attended / total) * 100).toFixed(1));
@@ -52,7 +53,7 @@ function parseCards() {
     let name = null;
     for (const line of lines) {
       if (/^\d+(\.\d+)?%$/.test(line)) continue;
-      if (/^\d+\s+of\s+\d+/i.test(line)) continue;
+      if (/^\d+(?:\.\d+)?\s+of\s+\d+/i.test(line)) continue;
       if (/^[A-Z]{2,6}\d{3}/.test(line) && line.length < 15) continue;
       if (line.length > 4) { name = line.substring(0, 45); break; }
     }
@@ -77,13 +78,13 @@ function parseOverall() {
     if (text.length > 300) continue;
 
     const pctMatch = text.match(/(\d+(?:\.\d+)?)\s*%/);
-    const hrsMatch = text.match(/(\d+)\s*[\/]\s*(\d+)\s*hrs?/i);
+    const hrsMatch = text.match(/(\d+(?:\.\d+)?)\s*[\/]\s*(\d+(?:\.\d+)?)\s*hrs?/i);
 
     if (pctMatch || hrsMatch) {
       return {
         pct: pctMatch ? parseFloat(pctMatch[1]) : null,
-        present: hrsMatch ? parseInt(hrsMatch[1]) : null,
-        total: hrsMatch ? parseInt(hrsMatch[2]) : null,
+        present: hrsMatch ? parseFloat(hrsMatch[1]) : null,
+        total: hrsMatch ? parseFloat(hrsMatch[2]) : null,
       };
     }
   }
@@ -109,6 +110,34 @@ function calcStats(attended, total) {
   return { current: current.toFixed(1), classesNeeded, canSkip };
 }
 
+
+function closePanel(panel) {
+  userClosed = true;
+  panel.remove();
+  showReopenBubble();
+}
+
+function minimizePanel(panel) {
+  panel.classList.toggle('cap-minimized');
+  const btn = document.getElementById('cap-minimize-btn');
+  if (btn) btn.textContent = panel.classList.contains('cap-minimized') ? '▢' : '▁';
+}
+
+function showReopenBubble() {
+  const existingBubble = document.getElementById('cap-reopen-bubble');
+  if (existingBubble) return;
+  const bubble = document.createElement('div');
+  bubble.id = 'cap-reopen-bubble';
+  bubble.innerHTML = '📊';
+  bubble.title = 'Open Attendance Analyser';
+  bubble.onclick = () => {
+    userClosed = false;
+    bubble.remove();
+    run();
+  };
+  document.body.appendChild(bubble);
+}
+
 function buildPanel(subjects, overall) {
   const existing = document.getElementById('christ-att-panel');
   if (existing) existing.remove();
@@ -120,7 +149,12 @@ function buildPanel(subjects, overall) {
     <div class="cap-header">
       <span class="cap-logo">📊</span>
       <span class="cap-title">Attendance Analyser</span>
-      <span class="cap-target">Target: ${TARGET}%</span>
+      <div class="cap-target-wrap">
+        <label class="cap-target-label">Target:</label>
+        <input class="cap-target-input" id="cap-target-input" type="number" min="1" max="100" value="${TARGET}" />
+        <span class="cap-target-pct">%</span>
+      </div>
+      <button class="cap-minimize" id="cap-minimize-btn">▁</button>
       <button class="cap-close" id="cap-close-btn">✕</button>
     </div>
   `;
@@ -159,7 +193,10 @@ function buildPanel(subjects, overall) {
   if (subjects.length === 0) {
     panel.innerHTML = header + `<div class="cap-body">${overallHTML}<div class="cap-empty">No subject data found.<br><br>Make sure you're on the<br><strong>Course Overview</strong> tab.</div></div>`;
     document.body.appendChild(panel);
-    document.getElementById('cap-close-btn').onclick = () => panel.remove();
+    document.getElementById('cap-close-btn').onclick = () => closePanel(panel);
+  const minBtn = document.getElementById('cap-minimize-btn');
+  if (minBtn) minBtn.onclick = () => minimizePanel(panel);
+    setupTargetInput();
     return;
   }
 
@@ -200,10 +237,37 @@ function buildPanel(subjects, overall) {
 
   panel.innerHTML = header + `<div class="cap-body">${overallHTML}${rows}</div>`;
   document.body.appendChild(panel);
-  document.getElementById('cap-close-btn').onclick = () => panel.remove();
+  document.getElementById('cap-close-btn').onclick = () => closePanel(panel);
+  const minBtn = document.getElementById('cap-minimize-btn');
+  if (minBtn) minBtn.onclick = () => minimizePanel(panel);
+  setupTargetInput();
+}
+
+function setupTargetInput() {
+  const input = document.getElementById('cap-target-input');
+  if (!input) return;
+  input.addEventListener('change', () => {
+    const val = parseInt(input.value);
+    if (val >= 1 && val <= 100) {
+      TARGET = val;
+      const subjects = parseCards();
+      const overall = parseOverall();
+      buildPanel(subjects, overall);
+    }
+  });
+}
+
+const ALLOWED = [
+  "https://espro.christuniversity.in:444/main/attendence",
+  "https://espro.christuniversity.in:444/main/Attendencdetails"
+];
+
+function isAllowedPage() {
+  return ALLOWED.some(url => location.href.startsWith(url));
 }
 
 function run() {
+  if (!isAllowedPage() || userClosed) return;
   const subjects = parseCards();
   const overall = parseOverall();
   buildPanel(subjects, overall);
@@ -219,3 +283,23 @@ const observer = new MutationObserver(() => {
   }, 1500);
 });
 observer.observe(document.body, { childList: true, subtree: true });
+
+// --- SPA navigation detection ---
+// Re-run when the URL changes (React router navigating between pages)
+let lastUrl = location.href;
+setInterval(() => {
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    userClosed = false; // reset so panel re-opens on new page
+    // Wait for new page content to render then re-run
+    setTimeout(run, 2500);
+  }
+}, 500);
+
+// --- Auto-refresh every 60 seconds ---
+setInterval(() => {
+  // Only refresh if panel is visible and we're on the attendance page
+  if (document.getElementById('christ-att-panel') && location.href.includes('attendence')) {
+    run();
+  }
+}, 60000);

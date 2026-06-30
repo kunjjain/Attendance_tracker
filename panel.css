@@ -194,3 +194,77 @@
   background: #1e2d45;
   margin: 10px 0;
 }
+
+/* Target input in header */
+.cap-target-wrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #1e293b;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+.cap-target-label {
+  font-size: 11px;
+  color: #64748b;
+}
+.cap-target-input {
+  width: 36px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.cap-target-input::-webkit-outer-spin-button,
+.cap-target-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.cap-target-pct {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Minimize button */
+.cap-minimize {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.cap-minimize:hover { color: #e2e8f0; background: #1e293b; }
+
+/* Minimized panel state */
+#christ-att-panel.cap-minimized .cap-body {
+  display: none;
+}
+#christ-att-panel.cap-minimized {
+  width: auto;
+}
+
+/* Floating reopen bubble */
+#cap-reopen-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  background: #0f1623;
+  border: 1px solid #1e2d45;
+  border-radius: 50%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 999999;
+}
+#cap-reopen-bubble:hover {
+  border-color: #3b82f6;
+}
