@@ -48,14 +48,6 @@ The extension scans your attendance page for the pattern **"X of Y hours attende
 
 ---
 
-## Changing the target %
-
-Open `content.js` and change line 4:
-```js
-const TARGET = 85; // change to 75 or whatever your college requires
-```
-
----
 
 ## Files
 
